@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  bio          String?
+  location     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  hostedGames  Game[]             @relation("HostedGames")
+  participants GameParticipant[]
+}
+
+model Game {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  sport       String
+  location    String
+  address     String?
+  dateTime    DateTime
+  maxPlayers  Int      @default(10)
+  skillLevel  String   @default("All levels")
+  hostId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  host         User                @relation("HostedGames", fields: [hostId], references: [id], onDelete: Cascade)
+  participants GameParticipant[]
+
+  @@index([sport])
+  @@index([dateTime])
+  @@index([location])
+}
+
+model GameParticipant {
+  id       String   @id @default(cuid())
+  gameId   String
+  userId   String
+  status   String   @default("JOINED")
+  joinedAt DateTime @default(now())
+
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([gameId, userId])
+  @@index([userId])
+}
