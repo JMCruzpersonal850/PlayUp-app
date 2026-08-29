@@ -69,9 +69,21 @@ export default async function GameDetailPage({ params }: GameDetailPageProps) {
                 <MapPin className="h-4 w-4" />
                 Where
               </p>
-              <p className="font-medium text-white">{game.location}</p>
+              <p className="font-medium text-white">
+                {game.parkName ?? game.location}
+              </p>
               {game.address ? (
                 <p className="mt-1 text-sm text-slate-400">{game.address}</p>
+              ) : null}
+              {game.latitude && game.longitude ? (
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${game.latitude},${game.longitude}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-3 inline-flex text-sm text-emerald-400 hover:text-emerald-300"
+                >
+                  Open in Google Maps
+                </a>
               ) : null}
             </div>
           </div>

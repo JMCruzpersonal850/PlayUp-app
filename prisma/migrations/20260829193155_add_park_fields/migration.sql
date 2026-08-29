@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE "Game" ADD COLUMN "latitude" REAL;
+ALTER TABLE "Game" ADD COLUMN "longitude" REAL;
+ALTER TABLE "Game" ADD COLUMN "parkId" TEXT;
+ALTER TABLE "Game" ADD COLUMN "parkName" TEXT;
+ALTER TABLE "Game" ADD COLUMN "placeId" TEXT;

@@ -28,6 +28,11 @@ model Game {
   sport       String
   location    String
   address     String?
+  parkId      String?
+  parkName    String?
+  placeId     String?
+  latitude    Float?
+  longitude   Float?
   dateTime    DateTime
   maxPlayers  Int      @default(10)
   skillLevel  String   @default("All levels")
