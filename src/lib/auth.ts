@@ -1,11 +1,13 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
+import { getEnv } from "./env";
 import { prisma } from "./prisma";
 
 const AUTH_COOKIE = "playup_session";
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET ?? "playup-dev-secret-change-in-production",
-);
+
+function getJwtSecret() {
+  return new TextEncoder().encode(getEnv().jwtSecret);
+}
 
 export type SessionUser = {
   id: string;
@@ -22,7 +24,7 @@ export async function createSession(user: SessionUser) {
     .setSubject(user.id)
     .setIssuedAt()
     .setExpirationTime("7d")
-    .sign(JWT_SECRET);
+    .sign(getJwtSecret());
 
   const cookieStore = await cookies();
   cookieStore.set(AUTH_COOKIE, token, {
@@ -45,7 +47,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   if (!token) return null;
 
   try {
-    const { payload } = await jwtVerify(token, JWT_SECRET);
+    const { payload } = await jwtVerify(token, getJwtSecret());
     const id = payload.sub;
     if (!id || typeof id !== "string") return null;
 

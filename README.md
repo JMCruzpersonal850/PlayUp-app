@@ -75,6 +75,17 @@ To enable the interactive Pensacola parks map and live Google Business listings:
 
 Without API keys, the host flow still works using the searchable park list fallback and Google Maps search links.
 
+## Production deployment
+
+See **[DEPLOYMENT.md](./DEPLOYMENT.md)** for the full guide. Summary of what you still need:
+
+1. **Google Cloud** — Maps JavaScript API, Places API, and a Map ID (billing required)
+2. **Hosted database** — Turso for Vercel, or Railway with a persistent volume (local SQLite is dev-only)
+3. **JWT secret** — generate with `openssl rand -base64 48`
+4. **Hosting** — Vercel or Railway, plus env vars from `.env.example`
+
+Verify a live deploy with `GET /api/health`.
+
 ## Project structure
 
 ```text

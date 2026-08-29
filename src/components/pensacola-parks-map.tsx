@@ -64,7 +64,7 @@ function ParksMapCanvas({
         defaultZoom={12}
         gestureHandling="greedy"
         disableDefaultUI
-        mapId="playup-pensacola-parks"
+        mapId={process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID ?? "DEMO_MAP_ID"}
         className="h-full w-full rounded-[inherit]"
         style={{ width: "100%", height: "100%" }}
       >
