@@ -12,8 +12,6 @@ import {
 
 export function LoginForm() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -22,34 +20,62 @@ export function LoginForm() {
     setLoading(true);
     setError("");
 
-    const response = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
+    const formData = new FormData(event.currentTarget);
+    const email = String(formData.get("email") ?? "").trim();
+    const password = String(formData.get("password") ?? "");
 
-    const data = await response.json();
-    setLoading(false);
-
-    if (!response.ok) {
-      setError(data.error ?? "Unable to log in");
+    if (!email || !password) {
+      setError("Enter your email and password.");
+      setLoading(false);
       return;
     }
 
-    router.push("/dashboard");
-    router.refresh();
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ email, password }),
+      });
+
+      let data: { error?: string } = {};
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error("Unexpected server response. Please try again.");
+      }
+
+      if (!response.ok) {
+        setError(data.error ?? "Unable to log in");
+        setLoading(false);
+        return;
+      }
+
+      router.push("/dashboard");
+      router.refresh();
+      window.location.assign("/dashboard");
+    } catch (submitError) {
+      setError(
+        submitError instanceof Error
+          ? submitError.message
+          : "Unable to log in. Check your connection and try again.",
+      );
+      setLoading(false);
+    }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className="space-y-5" noValidate>
       <div>
         <FieldLabel htmlFor="email">Email</FieldLabel>
         <TextInput
           id="email"
+          name="email"
           type="email"
+          inputMode="email"
           autoComplete="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
+          autoCapitalize="none"
+          autoCorrect="off"
           required
         />
       </div>
@@ -57,10 +83,9 @@ export function LoginForm() {
         <FieldLabel htmlFor="password">Password</FieldLabel>
         <TextInput
           id="password"
+          name="password"
           type="password"
           autoComplete="current-password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
           required
         />
       </div>

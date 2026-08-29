@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createSession, verifyPassword } from "@/lib/auth";
+import { createSession, isSecureRequest, verifyPassword } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { loginSchema } from "@/lib/validations";
 
@@ -28,16 +28,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
     }
 
-    await createSession({
-      id: user.id,
-      email: user.email,
-      name: user.name,
-    });
+    await createSession(
+      {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+      },
+      { secure: isSecureRequest(request) },
+    );
 
     return NextResponse.json({
       user: { id: user.id, email: user.email, name: user.name },
     });
-  } catch {
+  } catch (error) {
+    console.error("Login failed:", error);
     return NextResponse.json({ error: "Unable to log in" }, { status: 500 });
   }
 }

@@ -15,7 +15,10 @@ export type SessionUser = {
   name: string;
 };
 
-export async function createSession(user: SessionUser) {
+export async function createSession(
+  user: SessionUser,
+  options?: { secure?: boolean },
+) {
   const token = await new SignJWT({
     email: user.email,
     name: user.name,
@@ -27,9 +30,14 @@ export async function createSession(user: SessionUser) {
     .sign(getJwtSecret());
 
   const cookieStore = await cookies();
+  const secure =
+    options?.secure ??
+    (process.env.PLAYUP_SECURE_COOKIES === "true" ||
+      process.env.NODE_ENV === "production");
+
   cookieStore.set(AUTH_COOKIE, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure,
     sameSite: "lax",
     path: "/",
     maxAge: 60 * 60 * 24 * 7,
@@ -71,6 +79,14 @@ export async function requireUser() {
   });
 
   return user;
+}
+
+export function isSecureRequest(request: Request) {
+  const forwarded = request.headers.get("x-forwarded-proto");
+  if (forwarded) {
+    return forwarded.split(",")[0]?.trim() === "https";
+  }
+  return request.url.startsWith("https://");
 }
 
 export async function hashPassword(password: string) {

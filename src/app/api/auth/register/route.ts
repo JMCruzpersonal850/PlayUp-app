@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createSession, hashPassword } from "@/lib/auth";
+import { createSession, hashPassword, isSecureRequest } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { registerSchema } from "@/lib/validations";
 
@@ -36,10 +36,11 @@ export async function POST(request: Request) {
       select: { id: true, email: true, name: true },
     });
 
-    await createSession(user);
+    await createSession(user, { secure: isSecureRequest(request) });
 
     return NextResponse.json({ user });
-  } catch {
+  } catch (error) {
+    console.error("Registration failed:", error);
     return NextResponse.json({ error: "Unable to create account" }, { status: 500 });
   }
 }

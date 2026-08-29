@@ -12,9 +12,6 @@ import {
 
 export function RegisterForm() {
   const router = useRouter();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -23,32 +20,59 @@ export function RegisterForm() {
     setLoading(true);
     setError("");
 
-    const response = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
-    });
+    const formData = new FormData(event.currentTarget);
+    const name = String(formData.get("name") ?? "").trim();
+    const email = String(formData.get("email") ?? "").trim();
+    const password = String(formData.get("password") ?? "");
 
-    const data = await response.json();
-    setLoading(false);
-
-    if (!response.ok) {
-      setError(data.error ?? "Unable to create account");
+    if (!name || !email || !password) {
+      setError("Fill in all fields to create your account.");
+      setLoading(false);
       return;
     }
 
-    router.push("/dashboard");
-    router.refresh();
+    try {
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      let data: { error?: string } = {};
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error("Unexpected server response. Please try again.");
+      }
+
+      if (!response.ok) {
+        setError(data.error ?? "Unable to create account");
+        setLoading(false);
+        return;
+      }
+
+      router.push("/dashboard");
+      router.refresh();
+      window.location.assign("/dashboard");
+    } catch (submitError) {
+      setError(
+        submitError instanceof Error
+          ? submitError.message
+          : "Unable to create account. Check your connection and try again.",
+      );
+      setLoading(false);
+    }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className="space-y-5" noValidate>
       <div>
         <FieldLabel htmlFor="name">Name</FieldLabel>
         <TextInput
           id="name"
-          value={name}
-          onChange={(event) => setName(event.target.value)}
+          name="name"
+          autoComplete="name"
           required
         />
       </div>
@@ -56,10 +80,12 @@ export function RegisterForm() {
         <FieldLabel htmlFor="email">Email</FieldLabel>
         <TextInput
           id="email"
+          name="email"
           type="email"
+          inputMode="email"
           autoComplete="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
+          autoCapitalize="none"
+          autoCorrect="off"
           required
         />
       </div>
@@ -67,10 +93,9 @@ export function RegisterForm() {
         <FieldLabel htmlFor="password">Password</FieldLabel>
         <TextInput
           id="password"
+          name="password"
           type="password"
           autoComplete="new-password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
           minLength={6}
           required
         />
