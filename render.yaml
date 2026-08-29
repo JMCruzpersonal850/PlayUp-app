@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: playup
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PLAYUP_ALLOW_SQLITE
+        value: "true"
+      - key: DATABASE_URL
+        value: file:/data/playup.db
+      - key: JWT_SECRET
+        generateValue: true
+      - key: NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+        sync: false
+      - key: GOOGLE_MAPS_API_KEY
+        sync: false
+      - key: NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID
+        sync: false
+    disk:
+      name: playup-data
+      mountPath: /data
+      sizeGB: 1

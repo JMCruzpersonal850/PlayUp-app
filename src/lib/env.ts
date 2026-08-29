@@ -37,7 +37,7 @@ export function assertProductionEnv() {
     problems.push("JWT_SECRET must be set to a long random value in production.");
   }
 
-  if (env.isProduction && env.databaseUrl.startsWith("file:")) {
+  if (env.isProduction && env.databaseUrl.startsWith("file:") && process.env.PLAYUP_ALLOW_SQLITE !== "true") {
     problems.push(
       "DATABASE_URL points to a local SQLite file. Use Turso (libsql://) or another hosted database for production.",
     );
